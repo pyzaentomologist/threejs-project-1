@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  app:
+    image: project-1
+    build: .
+    container_name: project-1
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: npm run dev
