@@ -1,10 +1,9 @@
 import './style.css'
-import { setupCounter } from './counter'
+import { scene } from './scene'
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <div>
-    <p>New project!</p>
-  </div>
+  <canvas id="canvas">
+  </canvas>
 `;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+scene(document.querySelector<HTMLButtonElement>('#canvas')!)

@@ -10,3 +10,4 @@ services:
     volumes:
       - .:/app
     command: npm run dev
+    network_mode: bridge
