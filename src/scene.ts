@@ -1,8 +1,9 @@
 import * as THREE from "three";
+import gsap from "gsap";
 
 export function scene(canvas: HTMLButtonElement) {
 
-
+  console.log(gsap)
   // Scene
   const scene = new THREE.Scene();
 
@@ -11,22 +12,15 @@ export function scene(canvas: HTMLButtonElement) {
    */
   
   const group = new THREE.Group();
-  group.position.set(1, 0, 1);
-  group.rotation.set(1, 0, 0);
+
   scene.add(group);
 
   const cube1 = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshBasicMaterial({ color: "#ff0000", wireframe: true })
   );
-  const cube2 = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({ color: "#fff", wireframe: true })
-  );
 
-  cube2.position.set(1,1,1)
-
-  group.add(cube1, cube2);
+  group.add(cube1);
   // Axes helper
 
   const axesHelper = new THREE.AxesHelper(4);
@@ -57,5 +51,25 @@ export function scene(canvas: HTMLButtonElement) {
     canvas: canvas,
   });
   renderer.setSize(sizes.width, sizes.height);
-  renderer.render(scene, camera);
+  
+  // Clock
+  // const clock = new THREE.Clock();
+
+  gsap.to(cube1.position, { duration: 1, delay: 1, y: 2 });
+  gsap.to(cube1.position, { duration: 1, delay: 3, y: 0 });
+
+  // Animaions
+  
+  const tick = () => {
+    // const elapsedTime = clock.getElapsedTime();
+    // // Update objects
+    // group.rotation.x = Math.cos(elapsedTime);
+    // camera.rotation.y = Math.sin(elapsedTime);
+    // group.rotation.z = Math.sin(elapsedTime);
+
+    // // Render
+    renderer.render(scene, camera);
+    window.requestAnimationFrame(tick);
+  }
+  tick();
 }
