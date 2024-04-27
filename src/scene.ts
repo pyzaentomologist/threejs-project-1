@@ -1,6 +1,15 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 
+declare global {
+  interface Document {
+    webkitFullScreenElement: any;
+    webkitExitFullscreen: any;
+  }
+  interface HTMLButtonElement{
+    webkitRequestFullScreen: any;
+  }
+}
 
 export function scene(canvas: HTMLButtonElement) {
   // Scene
@@ -26,10 +35,11 @@ export function scene(canvas: HTMLButtonElement) {
   /**
    * Sizes
    */
-  const sizes = {
-    width: 800,
-    height: 600,
+  let sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
   };
+
 
   let cursor: { x: number; y: number } = { x: 0, y: 0};
   
@@ -42,7 +52,8 @@ export function scene(canvas: HTMLButtonElement) {
   /**
    * Camera
    */
-  const aspectRatio = sizes.width / sizes.height;
+  let aspectRatio = sizes.width / sizes.height;
+
   const camera = new THREE.PerspectiveCamera(80, aspectRatio, 0.1, 100);
   // camera.position.x = 5;
   // camera.position.y = 2;
@@ -61,7 +72,7 @@ export function scene(canvas: HTMLButtonElement) {
 
   // Controls
   const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true;
+  // controls.enableDamping = true;
   // controls.target.y = 2;
   // controls.update();
   
@@ -71,10 +82,38 @@ export function scene(canvas: HTMLButtonElement) {
     canvas: canvas,
   });
   renderer.setSize(sizes.width, sizes.height);
-
   // Clock
   // const clock = new THREE.Clock();
 
+
+  window.addEventListener("resize", () => {
+    // Update sizes
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  });
+
+
+  window.addEventListener("dblclick", () => {
+    // Handle fullscreen
+    const fullscreenElement = document.fullscreenElement || document.webkitFullScreenElement;
+    if (!fullscreenElement) {
+      if (canvas.requestFullscreen) {
+        canvas.requestFullscreen();
+      } else if (canvas.webkitRequestFullScreen) {
+        canvas.webkitRequestFullScreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen(); 
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen(); 
+      }
+    }
+  });
   // Animaions
 
   const tick = () => {
