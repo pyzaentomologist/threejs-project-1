@@ -22,8 +22,21 @@ export function scene(canvas: HTMLButtonElement) {
 
   scene.add(group);
 
+  const geometry = new THREE.BufferGeometry();
+  
+  const count: number = 50;
+  
+  const positionsArray = new Float32Array(count * 3 * 3);
+
+  for (let i = 0; i < count * 3 *3; i++) {
+    positionsArray[i] = Math.random() - 0.5;
+  }
+
+  const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3);
+  geometry.setAttribute("position", positionsAttribute);
   const cube1 = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1, 5, 5, 5),
+    // new THREE.BoxGeometry(1, 1, 1, 5, 5, 5),
+    geometry,
     new THREE.MeshBasicMaterial({ color: "#ff0000", wireframe: true })
   );
 
