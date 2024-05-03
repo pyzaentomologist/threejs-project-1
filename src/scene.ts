@@ -1,17 +1,44 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
+import GUI from "lil-gui";
+import gsap from "gsap";
 
 declare global {
   interface Document {
     webkitFullScreenElement: any;
     webkitExitFullscreen: any;
   }
-  interface HTMLButtonElement{
+  interface HTMLButtonElement {
     webkitRequestFullScreen: any;
   }
 }
 
 export function scene(canvas: HTMLButtonElement) {
+  // GUI - Debug
+  const gui = new GUI({
+    width: 300,
+    title: "Nice dewbug UI",
+    closeFolders: true,
+  });
+  // gui.close();
+  // gui.hide();
+  function checkHash() {
+    if (window.location.hash === "#hello") {
+      gui.show();
+    }
+  }
+  function checkKeyboardKey(e: KeyboardEvent) {
+    if (e.key == "h") {
+      gui.show(gui._hidden);
+    }
+  }
+
+  window.addEventListener("load", checkHash);
+  window.addEventListener("hashchange", checkHash);
+  window.addEventListener("keydown", checkKeyboardKey);
+
+  const debugObject = { color: "", spin: () => {}, subdivision: 0 };
+
   // Scene
   const scene = new THREE.Scene();
   /**
@@ -22,22 +49,24 @@ export function scene(canvas: HTMLButtonElement) {
 
   scene.add(group);
 
-  const geometry = new THREE.BufferGeometry();
-  
-  const count: number = 50;
-  
-  const positionsArray = new Float32Array(count * 3 * 3);
+  // const geometry = new THREE.BufferGeometry();
 
-  for (let i = 0; i < count * 3 *3; i++) {
-    positionsArray[i] = Math.random() - 0.5;
-  }
+  // const count: number = 50;
 
-  const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3);
-  geometry.setAttribute("position", positionsAttribute);
-  const cube1 = new THREE.Mesh(
-    // new THREE.BoxGeometry(1, 1, 1, 5, 5, 5),
-    geometry,
-    new THREE.MeshBasicMaterial({ color: "#ff0000", wireframe: true })
+  // const positionsArray = new Float32Array(count * 3 * 3);
+
+  // for (let i = 0; i < count * 3 *3; i++) {
+  //   positionsArray[i] = Math.random() - 0.5;
+  // }
+
+  // const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3);
+  // geometry.setAttribute("position", positionsAttribute);
+
+  debugObject.color = "#00ff00";
+  let cube1 = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
+    // geometry,
+    new THREE.MeshBasicMaterial({ color: debugObject.color, wireframe: true })
   );
 
   group.add(cube1);
@@ -53,14 +82,12 @@ export function scene(canvas: HTMLButtonElement) {
     height: window.innerHeight,
   };
 
+  let cursor: { x: number; y: number } = { x: 0, y: 0 };
 
-  let cursor: { x: number; y: number } = { x: 0, y: 0};
-  
   window.addEventListener("mousemove", (e) => {
-      cursor.x = e.clientX / sizes.width - 0.5;
-      cursor.y = - (e.clientY / sizes.height - 0.5);
-    }
-  );
+    cursor.x = e.clientX / sizes.width - 0.5;
+    cursor.y = -(e.clientY / sizes.height - 0.5);
+  });
 
   /**
    * Camera
@@ -72,14 +99,14 @@ export function scene(canvas: HTMLButtonElement) {
   // camera.position.y = 2;
   // camera.position.z = 7;
   // const camera = new THREE.OrthographicCamera(
-    // -1 * aspectRatio,
-    // 1 * aspectRatio,
-    // 1,
-    // -1,
-    // 0.1,
-    // 100
+  // -1 * aspectRatio,
+  // 1 * aspectRatio,
+  // 1,
+  // -1,
+  // 0.1,
+  // 100
   // );
-  camera.position.set(0,0,3);
+  camera.position.set(0, 0, 3);
   // camera.rotateY(-0.5);
   scene.add(camera);
 
@@ -88,9 +115,9 @@ export function scene(canvas: HTMLButtonElement) {
   // controls.enableDamping = true;
   // controls.target.y = 2;
   // controls.update();
-  
+
   // Renderer
-  
+
   const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
   });
@@ -98,6 +125,53 @@ export function scene(canvas: HTMLButtonElement) {
   // Clock
   // const clock = new THREE.Clock();
 
+  // addFolder
+
+  const cubeTweaks = gui.addFolder("Awesome Cube");
+  // cubeTweaks.close();
+  // gui Add
+
+  cubeTweaks.add(group.position, "y", -3, 3, 0.01).name("elevation");
+
+  // let myObject = {
+  //   myVariable: 1337
+  // };
+
+  // gui.add(myObject, 'myVariable');
+
+  cubeTweaks.add(group, "visible");
+  cubeTweaks.add(cube1.material, "wireframe");
+  cubeTweaks.addColor(debugObject, "color").onChange(() => {
+    cube1.material.color.set(debugObject.color);
+  });
+
+  debugObject.spin = () => {
+    gsap.to(group.rotation, { y: group.rotation.y + Math.PI * 2 });
+  };
+
+  cubeTweaks.add(debugObject, "spin");
+
+  debugObject.subdivision = 2;
+  cubeTweaks
+    .add(debugObject, "subdivision")
+    .min(1)
+    .max(20)
+    .step(1)
+    .onFinishChange(() => {
+      cube1.geometry.dispose();
+      (cube1.geometry = new THREE.BoxGeometry(
+        1,
+        1,
+        1,
+        debugObject.subdivision,
+        debugObject.subdivision,
+        debugObject.subdivision
+      )),
+        new THREE.MeshBasicMaterial({
+          color: debugObject.color,
+          wireframe: true,
+        });
+    });
 
   window.addEventListener("resize", () => {
     // Update sizes
@@ -109,10 +183,10 @@ export function scene(canvas: HTMLButtonElement) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   });
 
-
   window.addEventListener("dblclick", () => {
     // Handle fullscreen
-    const fullscreenElement = document.fullscreenElement || document.webkitFullScreenElement;
+    const fullscreenElement =
+      document.fullscreenElement || document.webkitFullScreenElement;
     if (!fullscreenElement) {
       if (canvas.requestFullscreen) {
         canvas.requestFullscreen();
@@ -121,9 +195,9 @@ export function scene(canvas: HTMLButtonElement) {
       }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen(); 
+        document.exitFullscreen();
       } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen(); 
+        document.webkitExitFullscreen();
       }
     }
   });
@@ -140,7 +214,7 @@ export function scene(canvas: HTMLButtonElement) {
     //   cursor.y * 5,
     //   Math.cos(cursor.x * Math.PI * 2) * 3
     // );
-    
+
     // camera.lookAt(group.position)
 
     // Update controls
