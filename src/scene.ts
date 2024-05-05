@@ -14,6 +14,61 @@ declare global {
 }
 
 export function scene(canvas: HTMLButtonElement) {
+  /**
+   * Textures
+   */
+  const loadingManager = new THREE.LoadingManager();
+
+  // loadingManager.onStart = () => {
+  //   console.log("Start");
+  // };
+  // loadingManager.onProgress = () => {
+  //   console.log("Progress");
+  // };
+  // loadingManager.onError = () => {
+  //   console.log(loadingManager);
+  // };
+
+  const textureLoader = new THREE.TextureLoader(loadingManager);
+  const colorTexture = textureLoader.load("/textures/checkerboard-8x8.png");
+  colorTexture.colorSpace = THREE.SRGBColorSpace;
+  const alphaTexture = textureLoader.load("/textures/door/alpha.jpg");
+  alphaTexture.colorSpace = THREE.SRGBColorSpace;
+  const heightTexture = textureLoader.load("/textures/door/height.jpg");
+  heightTexture.colorSpace = THREE.SRGBColorSpace;
+  const normalTexture = textureLoader.load("/textures/door/normal.jpg");
+  normalTexture.colorSpace = THREE.SRGBColorSpace;
+  const ambientOcclusionTexture = textureLoader.load(
+    "/textures/door/ambientOcclusion.jpg"
+  );
+  ambientOcclusionTexture.colorSpace = THREE.SRGBColorSpace;
+  const metalnessTexture = textureLoader.load("/textures/door/metalness.jpg");
+  metalnessTexture.colorSpace = THREE.SRGBColorSpace;
+  const roughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
+  roughnessTexture.colorSpace = THREE.SRGBColorSpace;
+
+  //Transforming texture
+
+  // colorTexture.repeat.x = 2;
+  // colorTexture.repeat.y = 3;
+  // colorTexture.wrapS = THREE.MirroredRepeatWrapping;
+  // colorTexture.wrapT = THREE.MirroredRepeatWrapping;
+
+  // colorTexture.offset.x = 0.5;
+  // colorTexture.offset.y = 0.5;
+
+  // colorTexture.center.x = 0.5;
+  // colorTexture.center.y = 0.5;
+
+  // colorTexture.rotation = Math.PI / 4;
+
+  //Filtering and Mipmapping
+
+  colorTexture.generateMipmaps = false;
+  // colorTexture.minFilter = THREE.NearestFilter;
+
+  // colorTexture.magFilter = THREE.NearestFilter;
+
   // GUI - Debug
   const gui = new GUI({
     width: 300,
@@ -64,11 +119,14 @@ export function scene(canvas: HTMLButtonElement) {
 
   debugObject.color = "#00ff00";
   let cube1 = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
+    new THREE.BoxGeometry(1, 1, 1),
     // geometry,
-    new THREE.MeshBasicMaterial({ color: debugObject.color, wireframe: true })
+    new THREE.MeshBasicMaterial({
+      map: colorTexture,
+      // wireframe: true
+    })
   );
-
+  console.log(cube1.geometry.attributes.uv);
   group.add(cube1);
   // Axes helper
 
@@ -112,7 +170,7 @@ export function scene(canvas: HTMLButtonElement) {
 
   // Controls
   const controls = new OrbitControls(camera, canvas);
-  // controls.enableDamping = true;
+  controls.enableDamping = true;
   // controls.target.y = 2;
   // controls.update();
 
@@ -151,27 +209,27 @@ export function scene(canvas: HTMLButtonElement) {
 
   cubeTweaks.add(debugObject, "spin");
 
-  debugObject.subdivision = 2;
-  cubeTweaks
-    .add(debugObject, "subdivision")
-    .min(1)
-    .max(20)
-    .step(1)
-    .onFinishChange(() => {
-      cube1.geometry.dispose();
-      (cube1.geometry = new THREE.BoxGeometry(
-        1,
-        1,
-        1,
-        debugObject.subdivision,
-        debugObject.subdivision,
-        debugObject.subdivision
-      )),
-        new THREE.MeshBasicMaterial({
-          color: debugObject.color,
-          wireframe: true,
-        });
-    });
+  // debugObject.subdivision = 2;
+  // cubeTweaks
+  //   .add(debugObject, "subdivision")
+  //   .min(1)
+  //   .max(20)
+  //   .step(1)
+  //   .onFinishChange(() => {
+  //     cube1.geometry.dispose();
+  //     (cube1.geometry = new THREE.BoxGeometry(
+  //       1,
+  //       1,
+  //       1,
+  //       debugObject.subdivision,
+  //       debugObject.subdivision,
+  //       debugObject.subdivision
+  //     )),
+  //       new THREE.MeshBasicMaterial({
+  //         color: debugObject.color,
+  //         wireframe: true,
+  //       });
+  //   });
 
   window.addEventListener("resize", () => {
     // Update sizes
